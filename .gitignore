@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+env/
+venv/
+.venv/
+backend/venv/
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dll
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Database files
+*.sqlite3
+*.db
+/backend/posture.db
+
+# Node
+node_modules/
+/frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite / TypeScript
+.vite/
+*.tsbuildinfo
+/dist/
+/frontend/dist/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.*
+.env.local
+
+# VS Code
+.vscode/
+.vscode/*
+
+# JetBrains
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Coverage
+coverage/
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+
+# Misc
+.cache/
+
+# Local test artifacts
+*.local
+
+# Ignore build artifacts or editor backups
+*.bak
+*.orig
+
+# Lock files (optional: keep package-lock.json if you rely on it)
+# package-lock.json
+
+# If you want to keep any generated files checked in, remove them from this list.

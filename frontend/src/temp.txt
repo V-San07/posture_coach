@@ -1,0 +1,53 @@
+        <div className="relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="rounded-xl w-[400px] h-[200px]"
+          />
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-[400px] h-[200px]"
+          />
+        </div>
+
+main.py: 
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dateutil.relativedelta import relativedelta
+from datetime import datetime, date, timezone, timedelta
+import sqlite3
+import os
+
+app = FastAPI()
+
+# Allow React frontend to talk to this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class Session(BaseModel):
+    timestamp: str
+    score: float
+    status: str
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "posture.db")
+
+# Initialize DB
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            score REAL,
+            status TEXT
+        )
