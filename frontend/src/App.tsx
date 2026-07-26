@@ -14,6 +14,8 @@ export default function App() {
     feedback: "Stand in front of the camera...",
     shoulderScore: 0,
     neckScore: 0,
+    neckForward: false,
+    shoulderAngle: false,
   });
 
   // 1. Camera setup
@@ -71,18 +73,17 @@ export default function App() {
       </div>
 
       {/* Posture Score */}
-      <div className={`mt-6 px-8 py-4 rounded-2xl text-center ${postureResult.status === "good" ? "bg-green-600" : "bg-red-600"
+      <div className={`mt-6 px-4 py-2 rounded-2xl text-center ${postureResult.status === "good" ? "bg-green-600" : "bg-red-600"
         }`}>
         <p className="text-white text-4xl font-bold">{postureResult.score}</p>
-        <p className="text-white text-sm mt-1">Posture Score</p>
+        <p className="text-white text-sm mt-1">Overall Score</p>
       </div>
 
       {/* Feedback */}
-      <p className="text-gray-300 mt-4 text-lg">{postureResult.feedback}</p>
-
-      <p className="text-gray-400 mt-2 text-sm">Shoulder score: {postureResult.shoulderScore}</p>
-      <p className="text-gray-400 mt-1 text-sm">Neck score: {postureResult.neckScore}</p>
-
+      <p className="text-gray-400 mt-3 text-lg">Head Position: {postureResult.neckForward ? "✕" : "✓"}</p>
+      <p className="text-gray-400 mt-2 text-lg">Aligned Shoulders: {postureResult.shoulderAngle ? "✕" : "✓"}</p>
+      <p className="text-gray-300 mt-2 text-lg">{postureResult.feedback}</p>
+      
       <PostureChart />
     </div>
   );

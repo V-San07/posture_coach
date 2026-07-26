@@ -11,12 +11,14 @@ export interface PostureResult {
   feedback: string;
   shoulderScore: number;
   neckScore: number;
-  
+  neckForward: boolean;
+  shoulderAngle: boolean;
+
 }
 
 export function analyzePosture(landmarks: Landmark[]): PostureResult {
   if (landmarks.length < 13) {
-    return { score: 0, status: "bad", feedback: "No pose detected", shoulderScore: 0, neckScore: 0 };
+    return { score: 0, status: "bad", feedback: "No pose detected", shoulderScore: 0, neckScore: 0, neckForward: false, shoulderAngle: false };
   }
 
   const nose = landmarks[NOSE];
@@ -34,17 +36,35 @@ export function analyzePosture(landmarks: Landmark[]): PostureResult {
 
   // Final score
   const score = Math.round((shoulderScore + neckScore) / 2);
-  const status = score >= 55 ? "good" : "bad";
+  const status = score >= 50 ? "good" : "bad";
 
   // Feedback
-  let feedback = "Great posture! Keep it up 💪";
-  if (shoulderScore < 65) feedback = "Level your shoulders";
-  else if (neckScore < 15) feedback = "Move your head back — don't hunch forward";
+  let feedback = "Good posture! Keep it up.";
+  let neckForward = false;
+  let shoulderAngle = false;
+
+  if (status === "bad") {
+    if (shoulderScore < 65 && neckScore < 15 ) {
+      feedback = "Your shoulders and neck need attention.";
+      shoulderAngle = true;
+      neckForward = true;
+    } 
+    else if (shoulderScore < 65) {
+      feedback = "Level your shoulders";
+      shoulderAngle = true;
+    }   
+    else if (neckScore < 10) {
+      feedback = "Move your head back — don't hunch forward";
+      neckForward = true;
+    }
+  }
   else{
-    feedback = "Good job! Maintain your posture.";
+    feedback = "Good posture! Keep it up.";
+    neckForward = false;
+    shoulderAngle = false;
   }
 
   console.log(neckScore, shoulderScore, score, status, feedback);
 
-  return { score, status, feedback, shoulderScore, neckScore };
+  return { score, status, feedback, shoulderScore, neckScore, neckForward, shoulderAngle};
 }
