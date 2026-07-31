@@ -1,10 +1,16 @@
 import sqlite3
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "posture.db")
+
+
+def normalize_timestamp(value: datetime) -> str:
+    """Return a UTC ISO 8601 string with a trailing Z for consistent sorting."""
+    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
 
 def generate_dummy_sessions(base_date, num_sessions, start_hour=7, end_hour=21):
     """Generate realistic dummy session data.
@@ -20,13 +26,14 @@ def generate_dummy_sessions(base_date, num_sessions, start_hour=7, end_hour=21):
     """
     sessions = []
     
+    
     for i in range(num_sessions):
         # Random time between start_hour and end_hour
         random_time = timedelta(
             hours=random.randint(start_hour, end_hour),
             minutes=random.randint(0, 59)
         )
-        timestamp = (base_date + timedelta(days=i//2) + random_time).isoformat()
+        timestamp = normalize_timestamp(base_date + timedelta(days=i//2) + random_time)
         
         # Generate posture scores (0-100)
         # Bias towards better scores (70-95) with some poor ones (30-70)
@@ -67,7 +74,7 @@ def seed_sessions(clear_db=False):
     
     # Generate dummy data for the last 30 days
     sessions = []
-    base_date = datetime.now() - timedelta(days=30)
+    base_date = datetime.now(timezone.utc) - timedelta(days=30)
     
     sessions.extend(generate_dummy_sessions(base_date, 45))
     
@@ -92,8 +99,15 @@ def seed_last_24_hours():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    base_date = datetime.now() - timedelta(hours=24)
-    sessions = generate_dummy_sessions(base_date, 8)  # ~8 sessions in 24 hours
+    base_date = datetime.now(timezone.utc) - timedelta(hours=24)
+    sessions = []  # ~8 sessions in 24 hours
+    for i in range(8):
+        random_offset = timedelta(minutes=random.randint(0, 24 * 60))
+        timestamp = normalize_timestamp(datetime.now(timezone.utc) - random_offset)
+        score = round(random.uniform(70, 95) if random.random() < 0.7 else random.uniform(30, 70), 2)
+        status = "excellent" if score >= 80 else "good" if score >= 60 else "needs_improvement" if score >= 40 else "poor"
+        # then generate score and status same way as before...
+        sessions.append((timestamp, score, status))
     
     # Insert sessions
     cursor.executemany(
@@ -116,8 +130,15 @@ def seed_last_1_hour():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    base_date = datetime.now() - timedelta(hours=1)
-    sessions = generate_dummy_sessions(base_date, 3)  # ~3 sessions in 1 hour
+    base_date = datetime.now(timezone.utc) - timedelta(hours=1)
+    sessions = []  # ~8 sessions in 24 hours
+    for i in range(8):
+        random_offset = timedelta(minutes=random.randint(0, 60))
+        timestamp = normalize_timestamp(datetime.now(timezone.utc) - random_offset)
+        score = round(random.uniform(70, 95) if random.random() < 0.7 else random.uniform(30, 70), 2)
+        status = "excellent" if score >= 80 else "good" if score >= 60 else "needs_improvement" if score >= 40 else "poor"
+        # then generate score and status same way as before...
+        sessions.append((timestamp, score, status))
     
     # Insert sessions
     cursor.executemany(

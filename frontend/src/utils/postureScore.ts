@@ -13,12 +13,21 @@ export interface PostureResult {
   neckScore: number;
   neckForward: boolean;
   shoulderAngle: boolean;
-
+  spineScore: number;
 }
 
 export function analyzePosture(landmarks: Landmark[]): PostureResult {
   if (landmarks.length < 13) {
-    return { score: 0, status: "bad", feedback: "No pose detected", shoulderScore: 0, neckScore: 0, neckForward: false, shoulderAngle: false };
+    return { 
+              score: 0, 
+              status: "bad", 
+              feedback: "No pose detected", 
+              shoulderScore: 0, 
+              neckScore: 0, 
+              neckForward: false, 
+              shoulderAngle: false, 
+              spineScore: 0 
+            };
   }
 
   const nose = landmarks[NOSE];
@@ -34,8 +43,13 @@ export function analyzePosture(landmarks: Landmark[]): PostureResult {
   const headForward = shoulderZ - nose.z;
   const neckScore = Math.round(Math.max(0, 100 - headForward * 100));
 
+  //3. Spine alignment check 
+  const midShoulderX = (leftShoulder.x + rightShoulder.x) / 2;
+  const spineAlignment = Math.round(Math.abs(nose.x - midShoulderX)*1000); // The smaller the value, the better the alignment
+  const spineScore = Math.max(0, 100 - spineAlignment); 
+
   // Final score
-  const score = Math.round((shoulderScore + neckScore) / 2);
+  const score = Math.round((shoulderScore + neckScore + spineScore) / 3);
   const status = score >= 50 ? "good" : "bad";
 
   // Feedback
@@ -44,11 +58,24 @@ export function analyzePosture(landmarks: Landmark[]): PostureResult {
   let shoulderAngle = false;
 
   if (status === "bad") {
-    if (shoulderScore < 65 && neckScore < 15 ) {
-      feedback = "Your shoulders and neck need attention.";
+    if (shoulderScore < 65 && neckScore < 10 && spineScore < 60) {
+      feedback = "Your posture needs improvement.";
       shoulderAngle = true;
       neckForward = true;
-    } 
+    }
+    else if(shoulderScore < 65 && spineScore < 60) {
+      feedback = "Level your shoulders and align your spine";
+      shoulderAngle = true;
+    }
+    else if(neckScore < 10 && spineScore < 60) {
+      feedback = "Move your head back and align your spine";
+      neckForward = true;
+    }
+    else if(shoulderScore < 65 && neckScore < 10) {
+      feedback = "Level your shoulders and move your head back — don't hunch forward";
+      shoulderAngle = true;
+      neckForward = true;
+    }
     else if (shoulderScore < 65) {
       feedback = "Level your shoulders";
       shoulderAngle = true;
@@ -56,6 +83,9 @@ export function analyzePosture(landmarks: Landmark[]): PostureResult {
     else if (neckScore < 10) {
       feedback = "Move your head back — don't hunch forward";
       neckForward = true;
+    }
+    else if (spineScore < 60) {
+      feedback = "Align your spine";
     }
   }
   else{
@@ -66,5 +96,5 @@ export function analyzePosture(landmarks: Landmark[]): PostureResult {
 
   console.log(neckScore, shoulderScore, score, status, feedback);
 
-  return { score, status, feedback, shoulderScore, neckScore, neckForward, shoulderAngle};
+  return { score, status, feedback, shoulderScore, neckScore, neckForward, shoulderAngle, spineScore };
 }

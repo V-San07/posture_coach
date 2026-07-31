@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Session {
@@ -6,8 +6,6 @@ interface Session {
   score: number;
   status: string;
 }
-
-const sampleIntervalMs = 10 * 60 * 1000; // 10 minutes
 
 export default function PostureChart() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -24,9 +22,15 @@ export default function PostureChart() {
   // Aggregate sessions based on selected period
   const aggregateData = (sessions: Session[], period: string) => {
     const now = Date.now();
+    const parseTimestamp = (value: string) => {
+      const parsed = Date.parse(value);
+      return Number.isNaN(parsed) ? null : parsed;
+    };
+
     // Filter sessions according to period
     const relevant = sessions.filter((s) => {
-      const time = new Date(s.timestamp).getTime();
+      const time = parseTimestamp(s.timestamp);
+      if (time === null) return false;
       if (period === "24h") return time >= now - 24 * 60 * 60 * 1000;
       if (period === "1h") return time >= now - 60 * 60 * 1000;
       return true; // 'all'
@@ -34,25 +38,24 @@ export default function PostureChart() {
 
     const groups: Record<string, number[]> = {};
     relevant.forEach((s) => {
-      const date = new Date(s.timestamp);
-      if (isNaN(date.getTime())) {
-        // Skip entries with invalid or missing timestamps
-        return;
-      }
+      const time = parseTimestamp(s.timestamp);
+      if (time === null) return;
+
+      const date = new Date(time);
       let key: string;
       if (period === "all") {
         // Group by day (YYYY-MM-DD)
-        key = date.toISOString().split("T")[0];
+        key = date.toISOString().slice(0, 10);
       } else if (period === "24h") {
-        // Group by hour (0‑23)
+        // Group by hour (00-23)
         const hour = date.getHours();
-        key = `${hour}:00`;
+        key = `${hour.toString().padStart(2, "0")}:00`;
       } else {
-        // 1h -> 5‑minute bucket
+        // 1h -> 5-minute bucket
         const hour = date.getHours();
         const minutes = date.getMinutes();
         const bucket = Math.floor(minutes / 5) * 5;
-        key = `${hour}:${bucket.toString().padStart(2, "0")}`;
+        key = `${hour.toString().padStart(2, "0")}:${bucket.toString().padStart(2, "0")}`;
       }
       if (!groups[key]) groups[key] = [];
       groups[key].push(s.score);
@@ -63,7 +66,15 @@ export default function PostureChart() {
         label,
         average: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
       }))
-      .sort((a, b) => (a.label > b.label ? 1 : -1));
+      .sort((a, b) => {
+        if (period === "all") return a.label.localeCompare(b.label);
+
+        const toMinutes = (label: string) => {
+          const [h = 0, m = 0] = label.split(":").map(Number);
+          return h * 60 + m;
+        };
+        return toMinutes(a.label) - toMinutes(b.label);
+      });
   };
 
   const chartData = aggregateData(sessions, period);
@@ -73,13 +84,13 @@ export default function PostureChart() {
 
 
   return (
-    <div className="mt-8 w-full max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-2">
+    <div className="mt-2 w-full max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-semibold text-white">Posture Score History</h2>
         <select
           value={period}
           onChange={(e) => setPeriod(e.target.value)}
-          className="bg-gray-800 text-white p-1 rounded"
+          className="bg-slate-900/80 text-white px-3 py-2 rounded-full border border-slate-700"
         >
           <option value="all">All</option>
           <option value="24h">Last 24 h</option>
@@ -88,11 +99,11 @@ export default function PostureChart() {
       </div>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-          <XAxis dataKey="label" stroke="#fff" />
-          <YAxis domain={[0, 100]} stroke="#fff" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+          <XAxis dataKey="label" stroke="#e2e8f0" interval="preserveStartEnd" />
+          <YAxis domain={[0, 100]} stroke="#e2e8f0" />
           <Tooltip />
-          <Bar dataKey="average" fill="#82ca9d" />
+          <Bar dataKey="average" fill="#34d399" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
