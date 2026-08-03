@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { usePose } from "./hooks/usePose";
 import { analyzePosture } from "./utils/postureScore";
 import PostureGuide from "./components/guide.tsx";
-import PostureChart from "./components/PostureChart.tsx";
+import PostureHistoryChart from "./components/PostureHistoryChart";
 import "./App.css";
 
 export default function App() {
@@ -164,7 +164,7 @@ export default function App() {
         </section>
 
         <section className="chart-card glass-card">
-          {/* <PostureChart /> */}
+          <PostureHistoryChart />
         </section>
 
         {showSessionSummary && sessionData ? (

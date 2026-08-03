@@ -1,8 +1,8 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import sqlite3
 import os
 
@@ -35,6 +35,26 @@ def normalize_timestamp(value: str) -> str:
         parsed = datetime.now(timezone.utc)
     return parsed.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+
+def format_history_cutoff(delta: timedelta | None) -> str | None:
+    """Format a cutoff timestamp in the same UTC format used for stored rows."""
+    if delta is None:
+        return None
+    return (datetime.now(timezone.utc) - delta).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def get_history_limit(period: str) -> int | None:
+    """Return a row limit for longer periods; short periods stay unbounded."""
+    limits = {
+        "10m": None,
+        "1h": None,
+        "24h": 90,
+        "7d": 110,
+        "30d": 120,
+        "all": 130,
+    }
+    return limits.get(period)
+
 # Initialize DB
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -59,7 +79,6 @@ def root():
 
 @app.post("/sessions")
 def create_session(session: Session):
-    print("POST received:", session.session_id, session.timestamp)
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
@@ -77,19 +96,39 @@ def create_session(session: Session):
         return {"error": str(e)}
     return {"message": "Session saved successfuly "}
 
-@app.get("/sessions")
-def get_sessions():
-    """Return all stored posture sessions as a JSON list.
-    Each item includes `timestamp`, `score`, and `status`."""
+@app.get("/sessions/history")
+def get_session_history(period: str = "24h"):
+    """Return posture score history for the selected time range."""
+    allowed_periods = {"10m": timedelta(minutes=10), "1h": timedelta(hours=1), "24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30), "all": None}
+
+    if period not in allowed_periods:
+        return {"error": "Invalid period"}
+
+    cutoff = format_history_cutoff(allowed_periods[period])
+    limit = get_history_limit(period)
+
     try:
         with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute("SELECT timestamp, score, status FROM sessions ORDER BY datetime(timestamp) ASC")
-            rows = cursor.fetchall()
-            sessions = [{"timestamp": row[0], "score": row[1], "status": row[2]} for row in rows]
-            return sessions
+
+            if cutoff is None:
+                query = "SELECT timestamp, score FROM sessions ORDER BY timestamp ASC"
+                params = ()
+            else:
+                query = "SELECT timestamp, score FROM sessions WHERE timestamp >= ? ORDER BY timestamp ASC"
+                params = (cutoff,)
+
+            if limit is not None:
+                query = f"{query} LIMIT ?"
+                params = params + (limit,)
+
+            cursor.execute(query, params)
+            rows = [dict(row) for row in cursor.fetchall()]
+            return {"history": rows}
+        
     except Exception as e:
-        return {"error": str(e)}
+        return {"errorsss": str(e)}
 
 @app.get("/sessions/{session_id}")
 def get_session(session_id: str):
@@ -120,5 +159,8 @@ def get_session(session_id: str):
                 return {"error": "Session not found"}
     except Exception as e:
         return {"error": str(e)}
+
+
+
 
 #uvicorn main:app --reload
