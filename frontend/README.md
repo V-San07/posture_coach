@@ -1,73 +1,94 @@
-# React + TypeScript + Vite
+# Posture Coach
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal posture coaching app that uses your webcam to analyze posture in real time and provide feedback to help you maintain better alignment while working, studying, or moving.
 
-Currently, two official plugins are available:
+## Demo screenshots
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Screenshots will be added here once the app is showcased in a polished demo.
 
-## React Compiler
+- Live posture feedback view
+- Session summary with score history
+- Posture guidance panel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- Real-time posture analysis using your webcam
+- Instant feedback for neck, shoulder, and spine alignment
+- Visual posture score with status indicators
+- Session tracking and summary reports
+- Posture alert after sustained poor posture
+- Simple posture guide for better habits
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Frontend: React, TypeScript, Vite
+- Backend: FastAPI, Python
+- Data visualization: Recharts
+- Media analysis: MediaPipe Tasks Vision
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Frontend
+
+```bash
+cd frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+## How to run
+
+### Start the backend
+
+```bash
+cd backend
+uvicorn main:app --reload
+```
+
+The API will be available at http://localhost:8000.
+
+### Start the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The app will open at http://localhost:5173.
+
+## Folder structure
+
+```text
+posture_coach/
+├── backend/
+│   ├── main.py
+│   ├── seed.py
+│   └── posture.db
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   └── package.json
+└── README.md
+```
+
+## Future improvements
+
+- Add user accounts and saved posture history
+- Support more detailed posture diagnostics
+- Add reminders and coaching tips
+- Improve the alert experience with richer UI and sound customization
+- Add mobile-friendly and accessibility improvements
+
