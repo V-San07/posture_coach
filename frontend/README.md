@@ -2,14 +2,6 @@
 
 A personal posture coaching app that uses your webcam to analyze posture in real time and provide feedback to help you maintain better alignment while working, studying, or moving.
 
-## Demo screenshots
-
-Screenshots will be added here once the app is showcased in a polished demo.
-
-- Live posture feedback view
-- Session summary with score history
-- Posture guidance panel
-
 ## Features
 
 - Real-time posture analysis using your webcam
