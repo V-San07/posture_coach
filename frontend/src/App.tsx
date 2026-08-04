@@ -12,7 +12,11 @@ export default function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<any>(null);
   const [showSessionSummary, setShowSessionSummary] = useState(false);
+  const [badPostureAlertVisible, setBadPostureAlertVisible] = useState(false);
   const { landmarksRef } = usePose(videoRef, canvasRef);
+  const badPostureStartRef = useRef<number | null>(null);
+  const alertTriggeredRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const [postureResult, setPostureResult] = useState({
     score: 0,
@@ -25,6 +29,37 @@ export default function App() {
     spineScore: 0,
   });
 
+  const playAlertSound = () => {
+    const AudioContextCtor = window.AudioContext || (window as Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+    if (!AudioContextCtor) {
+      return;
+    }
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContextCtor();
+    }
+
+    const context = audioContextRef.current;
+    if (context.state === "suspended") {
+      void context.resume();
+    }
+
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, context.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.45);
+    gainNode.gain.setValueAtTime(0.12, context.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.6);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.6);
+  };
+
   useEffect(() => {
     async function startCamera() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -36,12 +71,46 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const enableAudio = () => {
+      if (audioContextRef.current?.state === "suspended") {
+        void audioContextRef.current.resume();
+      }
+    };
+
+    window.addEventListener("pointerdown", enableAudio);
+    window.addEventListener("keydown", enableAudio);
+
+    return () => {
+      window.removeEventListener("pointerdown", enableAudio);
+      window.removeEventListener("keydown", enableAudio);
+    };
+  }, []);
+
+  useEffect(() => {
       let tick = 0;
       console.log("effect triggered")
 
       const interval = setInterval(() => {
         const result = analyzePosture(landmarksRef.current);
         setPostureResult(result);
+
+        if (result.status === "bad") {
+          if (badPostureStartRef.current === null) {
+            badPostureStartRef.current = Date.now();
+            alertTriggeredRef.current = false;
+          }
+
+          const elapsedBadPostureMs = Date.now() - badPostureStartRef.current;
+          if (elapsedBadPostureMs >= 45000 && !alertTriggeredRef.current) {
+            alertTriggeredRef.current = true;
+            setBadPostureAlertVisible(true);
+            playAlertSound();
+          }
+        } else {
+          badPostureStartRef.current = null;
+          alertTriggeredRef.current = false;
+          setBadPostureAlertVisible(false);
+        }
 
         tick++;
 
@@ -85,6 +154,16 @@ export default function App() {
       <div className="app-glow app-glow-right" />
 
       <main className="app-main">
+        {badPostureAlertVisible ? (
+          <div className="posture-alert-overlay" role="alert" aria-live="assertive">
+            <div className="posture-alert-card">
+              <p className="alert-label">Posture alert</p>
+              <h2>Adjust your position</h2>
+              <p>You have been holding a poor posture for over 45 seconds. Reset your shoulders and spine to keep your form balanced.</p>
+            </div>
+          </div>
+        ) : null}
+
         <section className="hero-card">
           <div className="hero-copy">
             <p className="eyebrow">Personal Posture Coach</p>
