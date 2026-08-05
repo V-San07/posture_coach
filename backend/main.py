@@ -51,7 +51,7 @@ def get_history_limit(period: str) -> int | None:
         "24h": 90,
         "7d": 110,
         "30d": 120,
-        "all": 130,
+        "all": 129,
     }
     return limits.get(period)
 
