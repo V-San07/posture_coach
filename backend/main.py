@@ -55,6 +55,20 @@ def get_history_limit(period: str) -> int | None:
     }
     return limits.get(period)
 
+
+def dedupe_history_by_minute(rows: list[dict]) -> list[dict]:
+    """Keep only one score per minute for history chart display."""
+    deduped = []
+    seen_minutes = set()
+
+    for row in rows:
+        minute_key = row["timestamp"][:16]
+        if minute_key not in seen_minutes:
+            seen_minutes.add(minute_key)
+            deduped.append(row)
+
+    return deduped
+
 # Initialize DB
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -125,7 +139,7 @@ def get_session_history(period: str = "24h"):
 
             cursor.execute(query, params)
             rows = [dict(row) for row in cursor.fetchall()]
-            return {"history": rows}
+            return {"history": dedupe_history_by_minute(rows)}
         
     except Exception as e:
         return {"errorsss": str(e)}
