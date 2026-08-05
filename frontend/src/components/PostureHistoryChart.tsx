@@ -77,19 +77,19 @@ export default function PostureHistoryChart() {
   );
 
   return (
-    <div className="rounded-3xl bg-slate-900/90 p-5 text-white shadow-xl shadow-slate-950/20">
+    <div className="glass-card rounded-3xl p-5 text-[var(--color-text)] shadow-xl shadow-black/20">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-100">Recent posture history</h3>
-          <p className="text-sm text-slate-400">Track your latest posture scores over time.</p>
+          <h3 className="text-lg font-semibold text-[var(--color-text-heading)]">Recent posture history</h3>
+          <p className="text-sm text-[var(--color-text-muted)]">Track your latest posture scores over time.</p>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-slate-300">
+        <label className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
           <span>Time period</span>
           <select
             value={period}
             onChange={(event) => setPeriod(event.target.value as PeriodOption)}
-            className="rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white outline-none"
+            className="rounded-xl border border-[rgba(166,173,182,0.4)] bg-[rgba(28,30,34,0.96)] px-3 py-2 text-sm text-[var(--color-text)] outline-none"
           >
             {periodOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -102,35 +102,35 @@ export default function PostureHistoryChart() {
 
       <div className="h-72 w-full">
         {isLoading ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          <div className="flex h-full items-center justify-center text-sm text-[var(--color-text-muted)]">
             Loading history...
           </div>
         ) : chartData.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          <div className="flex h-full items-center justify-center text-sm text-[var(--color-text-muted)]">
             No posture history yet for this period.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(132, 145, 163, 0.18)" />
               <XAxis
                 dataKey="time"
-                stroke="#94a3b8"
-                tick={{ fontSize: 12 }}
-                label={{ value: "Time", position: "insideBottom", offset: -5, fill: "#e2e8f0" }}
+                stroke="var(--color-accent)"
+                tick={{ fontSize: 12, fill: "var(--color-accent)" }}
+                label={{ value: "Time", position: "insideBottom", offset: -5, fill: "var(--color-text)" }}
               />
               <YAxis
                 domain={[0, 100]}
-                stroke="#94a3b8"
-                tick={{ fontSize: 12 }}
-                label={{ value: "Score", angle: -90, position: "insideLeft", fill: "#e2e8f0" }}
+                stroke="var(--color-accent)"
+                tick={{ fontSize: 12, fill: "var(--color-accent)" }}
+                label={{ value: "Score", angle: -90, position: "insideLeft", fill: "var(--color-text)" }}
               />
               <Tooltip
                 formatter={(value) => [`${value ?? "n/a"}`, "Score"]}
                 labelFormatter={(label) => `Time: ${label}`}
-                contentStyle={{ backgroundColor: "#0f172a", borderColor: "#38bdf8", borderRadius: 12 }}
+                contentStyle={{ backgroundColor: "var(--color-bg)", borderColor: "var(--color-accent)", borderRadius: 12 }}
               />
-              <Bar dataKey="score" fill="#38bdf8" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="score" fill="#42F2F7" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

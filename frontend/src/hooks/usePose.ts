@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { PoseLandmarker, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision";
 
 export interface Landmark {
@@ -12,7 +12,6 @@ export function usePose(
   videoRef: React.RefObject<HTMLVideoElement | null>,
   canvasRef: React.RefObject<HTMLCanvasElement | null>
 ) {
-  const [landmarks, setLandmarks] = useState<Landmark[]>([]);
   const landmarksRef = useRef<Landmark[]>([]);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
   const animFrameRef = useRef<number>(0);
@@ -60,13 +59,19 @@ export function usePose(
 
       if (results.landmarks.length > 0) {
         const drawUtils = new DrawingUtils(ctx);
-        drawUtils.drawLandmarks(results.landmarks[0], { color: "#00FF00", lineWidth: 2 });
-        drawUtils.drawConnectors(results.landmarks[0], PoseLandmarker.POSE_CONNECTIONS, {
-          color: "#00CCFF",
+        const poseLandmarks = results.landmarks[0];
+        drawUtils.drawLandmarks(poseLandmarks, {
+          color: "#42F2F7",
+          lineWidth: 2,
+          fillColor: "#FE4A49",
+        });
+
+        drawUtils.drawConnectors(poseLandmarks, PoseLandmarker.POSE_CONNECTIONS, {
+          color: "#FE4A49",
           lineWidth: 2,
         });
-        landmarksRef.current = results.landmarks[0];
-        setLandmarks(results.landmarks[0]);
+
+        landmarksRef.current = poseLandmarks;
       }
 
       animFrameRef.current = requestAnimationFrame(detect);
@@ -77,5 +82,5 @@ export function usePose(
     return () => cancelAnimationFrame(animFrameRef.current);
   }, [videoRef, canvasRef]);
 
-  return { landmarks, landmarksRef };
+  return { landmarksRef };
 }

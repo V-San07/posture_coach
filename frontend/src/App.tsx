@@ -188,7 +188,6 @@ export default function App() {
             <div className="video-frame">
               <video ref={videoRef} autoPlay playsInline />
               <canvas ref={canvasRef} />
-              <div className="video-overlay">Position yourself in frame</div>
             </div>
           </div>
 
@@ -203,21 +202,21 @@ export default function App() {
             <div className="mt-4 flex flex-col items-start gap-3">
               <div className="flex flex-wrap mx-auto items-center gap-2">
                 <button
-                  className="rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
+                  className="rounded-xl bg-[#3dcdd2] px-4 py-2 text-sm font-semibold !text-[#020202] transition hover:bg-[#2ecdf0] border border-[#42F2F7]/40 shadow-lg shadow-[#42F2F7]/10"
                   onClick={() => {if (sessionActive) { endSession() } else { setSessionActive(true); }}}
                 >
                   {sessionActive ? "End Session" : "Start Session"}
                 </button>
                 {sessionActive ? (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#FE4A49]/40 bg-[#FE4A49]/15 px-3 py-1 text-xs font-medium text-[#FE4A49]">
+                    <span className="h-2 w-2 rounded-full bg-[#FE4A49]" />
                     Session active
                   </span>
                 ) : null}
               </div>
-              <div className="flex items-start gap-2 rounded-2xl border border-slate-700/80 bg-slate-800/50 px-3 py-2 text-sm text-slate-300">
-                <span className="mt-0.5 text-base text-sky-400">ⓘ</span>
-                <p className="leading-5">Starting a session tracks posture data in real time and shows a summary with your results when you end it.</p>
+              <div className="flex items-start gap-2 rounded-2xl border border-[#8491A3]/50 bg-[#020202]/75 px-3 py-2 text-sm text-[#8c9cb2]">
+                <span className="mt-0.5 text-base !text-[#73a1f0]">ⓘ</span>
+                <p className="leading-5 !text-[#909db3]">Starting a session tracks posture data in real time and shows a summary with your results when you end it.</p>
               </div>
             </div>
           </div>
@@ -247,44 +246,42 @@ export default function App() {
         </section>
 
         {showSessionSummary && sessionData ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4">
-            <div className="relative w-full max-w-xl rounded-3xl border border-slate-700 bg-slate-900/95 p-6 shadow-2xl shadow-slate-950/40 backdrop-blur-lg text-slate-100">
-              
-
+          <div className="session-summary-backdrop">
+            <div className="session-summary-panel">
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-semibold">Session Summary</h2>
-                    <p className="text-sm text-slate-400">Review your latest posture session.</p>
+                    <h2 className="summary-heading">Session Summary</h2>
+                    <p className="summary-subtitle">Review your latest posture session.</p>
                   </div>
                 </div>
 
-                <div className="grid gap-3 rounded-3xl bg-slate-950/80 p-4 text-slate-200 ring-1 ring-slate-700">
-                <div className="flex justify-between text-sm text-slate-400">
+                <div className="session-summary-grid">
+                  <div className="summary-row">
                     <span>Date</span>
                     <span>{sessionData.date}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Time Started</span>
                     <span>{sessionData.started}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Time Ended</span>
                     <span>{sessionData.ended}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Average Score</span>
                     <span>{sessionData.avg_score}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Best Score</span>
                     <span>{sessionData.best_score}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Worst Score</span>
                     <span>{sessionData.worst_score}</span>
                   </div>
-                  <div className="flex justify-between text-sm text-slate-400">
+                  <div className="summary-row">
                     <span>Feedback</span>
                     <span>{sessionData.feedback}</span>
                   </div>
@@ -293,7 +290,7 @@ export default function App() {
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
+                    className="secondary-button"
                     onClick={() => setShowSessionSummary(false)}
                   >
                     Close
